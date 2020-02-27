@@ -1,0 +1,26 @@
+.App {
+  .container {
+    text-align: center;
+    min-height: 100px;
+  }
+  .drop-region-container {
+    margin-top: 3em;
+    padding: 1em;
+    border-radius: 10px;
+    width: 80%;
+    text-align: center;
+    background-color: gray;
+
+    .drop-region {
+      border: dashed 2px white;
+      #download-btn {
+        filter: invert(1);
+        margin-bottom: 30px;
+      }
+
+      color: white;
+      border-radius: 10px;
+      padding: 3em;
+    }
+  }
+}
