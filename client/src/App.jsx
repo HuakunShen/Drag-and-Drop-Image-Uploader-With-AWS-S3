@@ -53,21 +53,16 @@ class App extends React.Component {
                 Math.round((progressEvent.loaded * 100) / progressEvent.total)
               )
             );
-
-            // Clear percentage
-
-            // this.setUploadPercentage(0);
-            // setTimeout(() => this.setUploadPercentage(0), 10000);
           }
         })
-        .then(async res => {
+        .then(res => {
           console.log(res.data);
           // const images = this.state.images;
           // images.push({
           //   src: img.src
           // });
           // this.setState({ images });
-          await this.setState({ file_uploaded: this.state.file_uploaded + 1 });
+          this.setState({ file_uploaded: this.state.file_uploaded + 1 });
           this.previewFile(res.data.data);
         })
         .catch(err => {
@@ -94,7 +89,8 @@ class App extends React.Component {
 
   previewFile = data => {
     console.log('preview file');
-    const { Bucket, Key, Location } = data;
+    const { Location } = data;
+    // const { Bucket, Key, Location } = data;
     const images = this.state.images;
     images.push({
       src: Location

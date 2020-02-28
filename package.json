@@ -18,16 +18,9 @@
   "homepage": "https://github.com/HuakunShen/Drag-and-Drop-Image-Uploader-With-AWS-S3#readme",
   "dependencies": {
     "aws-sdk": "^2.627.0",
-    "axios": "^0.19.2",
-    "bootstrap": "^4.4.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "express-form-data": "^2.0.11",
     "jquery": "^3.4.1",
-    "multer": "^1.4.2",
-    "multer-s3": "^2.9.0",
-    "multiparty": "^4.2.1",
-    "node-sass": "^4.13.1",
-    "node-uuid": "^1.4.8"
+    "multer": "^1.4.2"
   }
 }
