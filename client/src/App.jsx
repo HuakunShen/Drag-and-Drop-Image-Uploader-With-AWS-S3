@@ -2,10 +2,14 @@ import React, { Fragment } from 'react';
 import './App.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { uid } from 'react-uid';
+import axios from 'axios';
+import $ from 'jquery';
 
 class App extends React.Component {
   state = {
-    images: []
+    images: [],
+    total_file_to_upload: 0,
+    file_uploaded: 0
   };
   preventDefaults = e => {
     console.log('prevent defaults');
@@ -13,17 +17,82 @@ class App extends React.Component {
     e.stopPropagation();
   };
 
-  previewFile = file => {
+  updateFileProgressBar = () => {
+    console.log('updateFileProgressBar');
+    console.log(this.state.file_uploaded);
+    console.log(this.state.total_file_to_upload);
+
+    console.log(
+      Math.round(this.state.file_uploaded / this.state.total_file_to_upload) *
+        100
+    );
+    this.setUploadPercentage(
+      Math.round(this.state.file_uploaded / this.state.total_file_to_upload) *
+        100,
+      'file-progress-bar'
+    );
+  };
+
+  setUploadPercentage = (progress, bar_name) => {
+    $(`#${bar_name}`).css('width', progress + '%');
+    $(`#${bar_name}`).text(progress + '%');
+  };
+  uploadFile = file => {
+    // console.log(file);
+
     let reader = new FileReader();
     reader.readAsDataURL(file);
+    this.setUploadPercentage(0, 'progress-bar');
     reader.onloadend = () => {
       // document.getElementById('preview-img').src = reader.result;
       let img = document.createElement('img');
       img.src = reader.result;
-      // document.getElementById('preview').appendChild(img);
-      const images = this.state.images;
-      images.push({ src: img.src });
-      this.setState({ images });
+      // upload
+      const formData = new FormData();
+
+      formData.append('file', file);
+      axios
+        .post('/upload-image', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: progressEvent => {
+            console.log(
+              'progress: ' +
+                parseInt(
+                  Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                )
+            );
+            this.setUploadPercentage(
+              parseInt(
+                Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              ),
+              'progress-bar'
+            );
+            this.updateFileProgressBar();
+
+            // Clear percentage
+            setTimeout(
+              () => this.setUploadPercentage(0, 'progress-bar'),
+              10000
+            );
+          }
+        })
+        .then(res => {
+          console.log(res.data);
+          // const images = this.state.images;
+          // images.push({
+          //   src: img.src
+          // });
+          // this.setState({ images });
+          this.previewFile(res.data.data);
+          this.setState({
+            file_uploaded: this.state.file_uploaded + 1
+          });
+        })
+        .catch(err => {
+          console.log('error: ' + err);
+        });
     };
   };
 
@@ -35,15 +104,48 @@ class App extends React.Component {
     console.log(images);
     this.setState(images);
   };
+  encode = data => {
+    var str = data.reduce(function(a, b) {
+      return a + String.fromCharCode(b);
+    }, '');
+    return btoa(str).replace(/.{76}(?=.)/g, '$&\n');
+  };
+  previewFile = data => {
+    console.log('preview file');
+    const { Bucket, Key, Location } = data;
+    const images = this.state.images;
+    images.push({
+      src: Location
+    });
+    this.setState({ images });
 
-  uploadFile = file => {
-    console.log('uploading file');
+    // get image data from s3
+    // axios
+    //   .get('/get-image', {
+    //     params: {
+    //       Bucket,
+    //       Key
+    //     }
+    //   })
+    //   .then(res => {
+    //     console.log(res.data.Body.data);
+    //     const images = this.state.images;
+    //     images.push({
+    //       src: 'data:image/png;base64,' + this.encode(res.data.Body.data)
+    //     });
+    //     this.setState({ images });
+    //   })
+    //   .catch(err => {
+    //     console.log('Error: failed to get preview file. ' + err);
+    //   });
   };
 
   handleFiles = files => {
     files = [...files];
     files.forEach(this.uploadFile);
-    files.forEach(this.previewFile);
+    this.setState({ total_file_to_upload: 5, file_uploaded: 0 }, () => {
+      this.updateFileProgressBar();
+    });
   };
 
   handleDrop = e => {
@@ -56,7 +158,7 @@ class App extends React.Component {
   handleDropWithInput = e => {
     console.log('handleDropWithInput');
     console.log(e.target.files);
-    Array.from(e.target.files).forEach(this.previewFile);
+    Array.from(e.target.files).forEach(this.uploadFile);
   };
 
   componentDidMount() {
@@ -93,6 +195,19 @@ class App extends React.Component {
           </div>
           <div className='progress mx-auto'>
             <div
+              id='progress-bar'
+              className='progress-bar progress-bar-success progress-bar-striped'
+              role='progressbar'
+              aria-valuenow='40'
+              aria-valuemin='0'
+              aria-valuemax='100'
+            >
+              0%
+            </div>
+          </div>
+          <div className='progress mx-auto'>
+            <div
+              id='file-progress-bar'
               className='progress-bar progress-bar-success progress-bar-striped'
               role='progressbar'
               aria-valuenow='40'

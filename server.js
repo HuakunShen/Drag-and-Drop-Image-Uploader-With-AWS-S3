@@ -1,35 +1,47 @@
 const express = require('express');
-
 const app = express();
-const PORT = process.env.PROT || 3000;
-var AWS = require('aws-sdk');
-var uuid = require('node-uuid');
-// Create an S3 client
-const s3 = new AWS.S3();
-
-app.get('/', (req, res) => {
-  res.send('hello world');
+const AWS = require('aws-sdk');
+const s3Client = new AWS.S3({
+  accessKeyId: process.env.accessKeyId,
+  secretAccessKey: process.env.secretAccessKey,
+  region: process.env.region
 });
+require('dotenv').config();
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-app.post('/', (req, res) => {
-  const { bucket_name, key_name, body } = req.body;
-  const params = { Bucket: bucket_name, Key: key_name, Body: body };
-  s3.putObject(params, function(err, data) {
+const uploadHelper = (req, res) => {
+  console.log('uploadHelper req: ' + req);
+  console.log('uploadHelper req.file: ' + req.file);
+  console.log(req.file);
+
+  const params = {
+    Acl: 'public-read',
+    Bucket: 'our-story-huakun',
+    Key: req.file.originalname,
+    Body: req.file.buffer
+  };
+  s3Client.upload(params, (err, data) => {
     if (err) {
-      console.log(err);
-      res.status(400).send(err);
-    } else {
-      console.log(
-        'Successfully uploaded data to ' + bucketName + '/' + keyName
-      );
-      res.json({
-        msg: 'Successfully uploaded data to ' + bucketName + '/' + keyName,
-        data: data
-      });
+      res.status(500).json({ error: 'error -> ' + err });
     }
+    res.json({ data });
+  });
+};
+
+app.post('/upload-image', upload.single('file'), uploadHelper);
+app.get('/get-image', (req, res) => {
+  console.log(req.query);
+  const query = req.query;
+  s3Client.getObject(query, (err, data) => {
+    if (err) return res.status(400).send('Failed to get object');
+    res.send(data);
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+app.listen(520, () => {
+  console.log('Server listening on port 520');
 });
