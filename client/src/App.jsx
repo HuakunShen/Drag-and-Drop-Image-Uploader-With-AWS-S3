@@ -7,9 +7,7 @@ import $ from 'jquery';
 
 class App extends React.Component {
   state = {
-    images: [],
-    total_file_to_upload: 0,
-    file_uploaded: 0
+    images: []
   };
   preventDefaults = e => {
     console.log('prevent defaults');
@@ -17,32 +15,15 @@ class App extends React.Component {
     e.stopPropagation();
   };
 
-  updateFileProgressBar = () => {
-    console.log('updateFileProgressBar');
-    console.log(this.state.file_uploaded);
-    console.log(this.state.total_file_to_upload);
-
-    console.log(
-      Math.round(this.state.file_uploaded / this.state.total_file_to_upload) *
-        100
-    );
-    this.setUploadPercentage(
-      Math.round(this.state.file_uploaded / this.state.total_file_to_upload) *
-        100,
-      'file-progress-bar'
-    );
-  };
-
-  setUploadPercentage = (progress, bar_name) => {
-    $(`#${bar_name}`).css('width', progress + '%');
-    $(`#${bar_name}`).text(progress + '%');
+  setUploadPercentage = progress => {
+    $('#progress-bar').css('width', progress + '%');
+    $('#progress-bar').text(progress + '%');
   };
   uploadFile = file => {
-    // console.log(file);
+    console.log(file);
 
     let reader = new FileReader();
     reader.readAsDataURL(file);
-    this.setUploadPercentage(0, 'progress-bar');
     reader.onloadend = () => {
       // document.getElementById('preview-img').src = reader.result;
       let img = document.createElement('img');
@@ -51,6 +32,7 @@ class App extends React.Component {
       const formData = new FormData();
 
       formData.append('file', file);
+      this.setUploadPercentage(0);
       axios
         .post('/upload-image', formData, {
           headers: {
@@ -66,16 +48,12 @@ class App extends React.Component {
             this.setUploadPercentage(
               parseInt(
                 Math.round((progressEvent.loaded * 100) / progressEvent.total)
-              ),
-              'progress-bar'
+              )
             );
-            this.updateFileProgressBar();
 
             // Clear percentage
-            setTimeout(
-              () => this.setUploadPercentage(0, 'progress-bar'),
-              10000
-            );
+            // this.setUploadPercentage(0);
+            // setTimeout(() => this.setUploadPercentage(0), 10000);
           }
         })
         .then(res => {
@@ -86,9 +64,6 @@ class App extends React.Component {
           // });
           // this.setState({ images });
           this.previewFile(res.data.data);
-          this.setState({
-            file_uploaded: this.state.file_uploaded + 1
-          });
         })
         .catch(err => {
           console.log('error: ' + err);
@@ -143,9 +118,6 @@ class App extends React.Component {
   handleFiles = files => {
     files = [...files];
     files.forEach(this.uploadFile);
-    this.setState({ total_file_to_upload: 5, file_uploaded: 0 }, () => {
-      this.updateFileProgressBar();
-    });
   };
 
   handleDrop = e => {
@@ -176,6 +148,7 @@ class App extends React.Component {
       document.getElementById('file-input').click();
     });
   }
+
   render() {
     return (
       <div className='App'>
@@ -196,18 +169,6 @@ class App extends React.Component {
           <div className='progress mx-auto'>
             <div
               id='progress-bar'
-              className='progress-bar progress-bar-success progress-bar-striped'
-              role='progressbar'
-              aria-valuenow='40'
-              aria-valuemin='0'
-              aria-valuemax='100'
-            >
-              0%
-            </div>
-          </div>
-          <div className='progress mx-auto'>
-            <div
-              id='file-progress-bar'
               className='progress-bar progress-bar-success progress-bar-striped'
               role='progressbar'
               aria-valuenow='40'
