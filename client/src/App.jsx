@@ -7,7 +7,9 @@ import $ from 'jquery';
 
 class App extends React.Component {
   state = {
-    images: []
+    images: [],
+    total_file: 0,
+    file_uploaded: 0
   };
   preventDefaults = e => {
     console.log('prevent defaults');
@@ -19,11 +21,12 @@ class App extends React.Component {
     $('#progress-bar').css('width', progress + '%');
     $('#progress-bar').text(progress + '%');
   };
-  uploadFile = file => {
+  uploadFile = async file => {
     console.log(file);
 
     let reader = new FileReader();
     reader.readAsDataURL(file);
+    await this.setUploadPercentage(0);
     reader.onloadend = () => {
       // document.getElementById('preview-img').src = reader.result;
       let img = document.createElement('img');
@@ -32,7 +35,7 @@ class App extends React.Component {
       const formData = new FormData();
 
       formData.append('file', file);
-      this.setUploadPercentage(0);
+
       axios
         .post('/upload-image', formData, {
           headers: {
@@ -52,17 +55,19 @@ class App extends React.Component {
             );
 
             // Clear percentage
+
             // this.setUploadPercentage(0);
             // setTimeout(() => this.setUploadPercentage(0), 10000);
           }
         })
-        .then(res => {
+        .then(async res => {
           console.log(res.data);
           // const images = this.state.images;
           // images.push({
           //   src: img.src
           // });
           // this.setState({ images });
+          await this.setState({ file_uploaded: this.state.file_uploaded + 1 });
           this.previewFile(res.data.data);
         })
         .catch(err => {
@@ -79,12 +84,14 @@ class App extends React.Component {
     console.log(images);
     this.setState(images);
   };
+
   encode = data => {
     var str = data.reduce(function(a, b) {
       return a + String.fromCharCode(b);
     }, '');
     return btoa(str).replace(/.{76}(?=.)/g, '$&\n');
   };
+
   previewFile = data => {
     console.log('preview file');
     const { Bucket, Key, Location } = data;
@@ -116,7 +123,9 @@ class App extends React.Component {
   };
 
   handleFiles = files => {
+    // this.setState({ total_file: files.length, file_uploaded: 0 });
     files = [...files];
+
     files.forEach(this.uploadFile);
   };
 
@@ -124,12 +133,15 @@ class App extends React.Component {
     console.log('dropped');
     const dt = e.dataTransfer;
     const files = dt.files;
+    this.setState({ total_file: files.length, file_uploaded: 0 });
+
     this.handleFiles(files);
   };
 
   handleDropWithInput = e => {
     console.log('handleDropWithInput');
     console.log(e.target.files);
+    this.setState({ total_file: e.target.files.length, file_uploaded: 0 });
     Array.from(e.target.files).forEach(this.uploadFile);
   };
 
@@ -150,6 +162,10 @@ class App extends React.Component {
   }
 
   render() {
+    const total_progress = Math.round(
+      (this.state.file_uploaded / this.state.total_file) * 100
+    );
+    console.log('total_progress ' + total_progress);
     return (
       <div className='App'>
         <div className='container'>
@@ -166,16 +182,40 @@ class App extends React.Component {
               />
             </div>
           </div>
+          <p className='mx-auto'>
+            <strong>Single Image Progress</strong>
+          </p>
           <div className='progress mx-auto'>
             <div
               id='progress-bar'
-              className='progress-bar progress-bar-success progress-bar-striped'
+              className='progress-bar progress-bar-striped bg-info'
               role='progressbar'
               aria-valuenow='40'
               aria-valuemin='0'
               aria-valuemax='100'
             >
               0%
+            </div>
+          </div>
+          <p className='mx-auto'>
+            <strong>Overall Progress</strong>
+          </p>
+          <p>
+            Total: {this.state.total_file}, Uploaded: {this.state.file_uploaded}
+          </p>
+          <div className='progress mx-auto'>
+            <div
+              id='progress-bar'
+              className='progress-bar progress-bar-striped bg-success'
+              role='progressbar'
+              aria-valuenow='40'
+              aria-valuemin='0'
+              aria-valuemax='100'
+              style={{ width: `${total_progress}%` }}
+            >
+              {Math.round(this.state.file_uploaded / this.state.total_file) *
+                100}
+              %
             </div>
           </div>
           <div id='preview' className='mx-auto'>
