@@ -25,6 +25,9 @@
         padding: 3em;
       }
     }
+    .drop-region-container.highlight {
+      background-color: limegreen;
+    }
     .drop-region:hover {
       cursor: pointer;
     }

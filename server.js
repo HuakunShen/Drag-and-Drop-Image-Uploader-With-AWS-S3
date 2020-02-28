@@ -20,7 +20,7 @@ const uploadHelper = (req, res) => {
 
   const params = {
     Acl: 'public-read',
-    Bucket: 'our-story-huakun',
+    Bucket: 'our-story-huakun/test-image',
     Key: req.file.originalname,
     Body: req.file.buffer
   };

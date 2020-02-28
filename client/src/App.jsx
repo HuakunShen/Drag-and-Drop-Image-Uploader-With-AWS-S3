@@ -150,7 +150,30 @@ class App extends React.Component {
       document.body.addEventListener(eventName, this.preventDefaults, false);
     });
     drop_region.addEventListener('drop', this.handleDrop, false);
+    ['dragenter', 'dragover'].forEach(eventName => {
+      drop_region.addEventListener(
+        eventName,
+        () => {
+          console.log('add highlight');
+          $('.drop-region-container').addClass('highlight');
+        },
+        false
+      );
+    });
 
+    [('dragleave', 'drop')].forEach(eventName => {
+      drop_region.addEventListener(
+        eventName,
+        () => {
+          console.log('remove highlight');
+          $('.drop-region-container').removeClass('highlight');
+        },
+        false
+      );
+    });
+    $('.drop-region-container').on('dragleave', function() {
+      $('.drop-region-container').removeClass('highlight');
+    });
     // click to upload
     drop_region.addEventListener('click', () => {
       document.getElementById('file-input').click();
