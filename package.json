@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "client": "cd client && npm start"
+    "client": "cd client && npm start",
+    "test": "concurrently \"npm start\" \"npm run client\""
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,7 @@
   "homepage": "https://github.com/HuakunShen/Drag-and-Drop-Image-Uploader-With-AWS-S3#readme",
   "dependencies": {
     "aws-sdk": "^2.627.0",
+    "concurrently": "^5.1.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jquery": "^3.4.1",
