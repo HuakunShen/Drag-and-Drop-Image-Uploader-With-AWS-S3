@@ -9,26 +9,25 @@ class App extends React.Component {
   state = {
     images: [],
     total_file: 0,
-    file_uploaded: 0
+    file_uploaded: 0,
   };
-  preventDefaults = e => {
+  preventDefaults = (e) => {
     console.log('prevent defaults');
     e.preventDefault();
     e.stopPropagation();
   };
 
-  setUploadPercentage = progress => {
+  setUploadPercentage = (progress) => {
     $('#progress-bar').css('width', progress + '%');
     $('#progress-bar').text(progress + '%');
   };
-  uploadFile = async file => {
+  uploadFile = async (file) => {
     console.log(file);
 
     let reader = new FileReader();
     reader.readAsDataURL(file);
     await this.setUploadPercentage(0);
     reader.onloadend = () => {
-      // document.getElementById('preview-img').src = reader.result;
       let img = document.createElement('img');
       img.src = reader.result;
       // upload
@@ -39,9 +38,9 @@ class App extends React.Component {
       axios
         .post('/upload-image', formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
           },
-          onUploadProgress: progressEvent => {
+          onUploadProgress: (progressEvent) => {
             console.log(
               'progress: ' +
                 parseInt(
@@ -53,25 +52,20 @@ class App extends React.Component {
                 Math.round((progressEvent.loaded * 100) / progressEvent.total)
               )
             );
-          }
+          },
         })
-        .then(res => {
+        .then((res) => {
           console.log(res.data);
-          // const images = this.state.images;
-          // images.push({
-          //   src: img.src
-          // });
-          // this.setState({ images });
           this.setState({ file_uploaded: this.state.file_uploaded + 1 });
           this.previewFile(res.data.data);
         })
-        .catch(err => {
+        .catch((err) => {
           console.log('error: ' + err);
         });
     };
   };
 
-  removePreviewImage = e => {
+  removePreviewImage = (e) => {
     const index = e.target.getAttribute('index');
     console.log('Remove image on index ' + index);
     const images = this.state.images;
@@ -80,52 +74,22 @@ class App extends React.Component {
     this.setState(images);
   };
 
-  encode = data => {
-    var str = data.reduce(function(a, b) {
-      return a + String.fromCharCode(b);
-    }, '');
-    return btoa(str).replace(/.{76}(?=.)/g, '$&\n');
-  };
-
-  previewFile = data => {
+  previewFile = (data) => {
     console.log('preview file');
     const { Location } = data;
-    // const { Bucket, Key, Location } = data;
     const images = this.state.images;
     images.push({
-      src: Location
+      src: Location,
     });
     this.setState({ images });
-
-    // get image data from s3
-    // axios
-    //   .get('/get-image', {
-    //     params: {
-    //       Bucket,
-    //       Key
-    //     }
-    //   })
-    //   .then(res => {
-    //     console.log(res.data.Body.data);
-    //     const images = this.state.images;
-    //     images.push({
-    //       src: 'data:image/png;base64,' + this.encode(res.data.Body.data)
-    //     });
-    //     this.setState({ images });
-    //   })
-    //   .catch(err => {
-    //     console.log('Error: failed to get preview file. ' + err);
-    //   });
   };
 
-  handleFiles = files => {
-    // this.setState({ total_file: files.length, file_uploaded: 0 });
+  handleFiles = (files) => {
     files = [...files];
-
     files.forEach(this.uploadFile);
   };
 
-  handleDrop = e => {
+  handleDrop = (e) => {
     console.log('dropped');
     const dt = e.dataTransfer;
     const files = dt.files;
@@ -134,7 +98,7 @@ class App extends React.Component {
     this.handleFiles(files);
   };
 
-  handleDropWithInput = e => {
+  handleDropWithInput = (e) => {
     console.log('handleDropWithInput');
     console.log(e.target.files);
     this.setState({ total_file: e.target.files.length, file_uploaded: 0 });
@@ -145,12 +109,12 @@ class App extends React.Component {
     // drag and drop to upload
     const drop_region = document.getElementById('drop-region');
     console.log(drop_region);
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
       drop_region.addEventListener(eventName, this.preventDefaults, false);
       document.body.addEventListener(eventName, this.preventDefaults, false);
     });
     drop_region.addEventListener('drop', this.handleDrop, false);
-    ['dragenter', 'dragover'].forEach(eventName => {
+    ['dragenter', 'dragover'].forEach((eventName) => {
       drop_region.addEventListener(
         eventName,
         () => {
@@ -161,7 +125,7 @@ class App extends React.Component {
       );
     });
 
-    [('dragleave', 'drop')].forEach(eventName => {
+    [('dragleave', 'drop')].forEach((eventName) => {
       drop_region.addEventListener(
         eventName,
         () => {
@@ -171,7 +135,7 @@ class App extends React.Component {
         false
       );
     });
-    $('.drop-region-container').on('dragleave', function() {
+    $('.drop-region-container').on('dragleave', function () {
       $('.drop-region-container').removeClass('highlight');
     });
     // click to upload

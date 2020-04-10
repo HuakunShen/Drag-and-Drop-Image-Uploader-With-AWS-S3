@@ -15,9 +15,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const uploadHelper = (req, res) => {
-  console.log('uploadHelper req: ' + req);
-  console.log('uploadHelper req.file: ' + req.file);
-  console.log(req.file);
+  // console.log('uploadHelper req: ' + req);
+  // console.log('uploadHelper req.file: ' + req.file);
+  // console.log(req.file);
 
   const params = {
     Acl: 'public-read',
@@ -28,7 +28,7 @@ const uploadHelper = (req, res) => {
 
   s3Client.upload(params, (err, data) => {
     if (err) {
-      console.log(err);
+      // console.log(err);
       return res.status(500).json({ error: 'error -> ' + err });
     }
     res.json({ data });
@@ -37,7 +37,7 @@ const uploadHelper = (req, res) => {
 
 app.post('/upload-image', upload.single('file'), uploadHelper);
 app.get('/get-image', (req, res) => {
-  console.log(req.query);
+  // console.log(req.query);
   const query = req.query;
   s3Client.getObject(query, (err, data) => {
     if (err) return res.status(400).send('Failed to get object');
@@ -46,5 +46,5 @@ app.get('/get-image', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  // console.log(`Server listening on port ${PORT}`);
 });
