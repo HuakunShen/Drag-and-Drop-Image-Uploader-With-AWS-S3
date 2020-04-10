@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "client": "cd client && npm start",
+    "dev": "nodemon server.js",
     "test": "concurrently \"npm start\" \"npm run client\""
   },
   "repository": {
