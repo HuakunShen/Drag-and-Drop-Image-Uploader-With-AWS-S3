@@ -98,8 +98,8 @@ class App extends React.Component {
     this.handleFiles(files);
   };
 
-  handleDropWithInput = (e) => {
-    console.log('handleDropWithInput');
+  handleInputByClick = (e) => {
+    console.log('handleInputByClick');
     console.log(e.target.files);
     this.setState({ total_file: e.target.files.length, file_uploaded: 0 });
     Array.from(e.target.files).forEach(this.uploadFile);
@@ -161,7 +161,7 @@ class App extends React.Component {
                 id='file-input'
                 type='file'
                 multiple
-                onChange={this.handleDropWithInput}
+                onChange={this.handleInputByClick}
               />
             </div>
           </div>
