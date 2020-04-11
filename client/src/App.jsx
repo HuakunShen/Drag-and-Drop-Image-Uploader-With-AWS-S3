@@ -15,7 +15,7 @@ class App extends React.Component {
     e.stopPropagation();
   };
 
-  uploadFile = async (files) => {
+  uploadFile = (files) => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('files', file, file.name);
