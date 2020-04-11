@@ -14,28 +14,30 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const uploadHelper = (req, res) => {
-  // console.log('uploadHelper req: ' + req);
-  // console.log('uploadHelper req.file: ' + req.file);
-  // console.log(req.file);
-
-  const params = {
-    Acl: 'public-read',
-    Bucket: process.env.Bucket,
-    Key: 'test-image/' + req.file.originalname,
-    Body: req.file.buffer,
-  };
-
-  s3Client.upload(params, (err, data) => {
-    if (err) {
-      // console.log(err);
-      return res.status(500).json({ error: 'error -> ' + err });
-    }
-    res.json({ data });
+app.post('/upload-image', upload.array('files'), (req, res) => {
+  const promise_array = [];
+  req.files.forEach((file) => {
+    const params = {
+      Acl: 'public-read',
+      Bucket: process.env.Bucket,
+      Key: '' + file.originalname,
+      Body: file.buffer,
+    };
+    const putObjectPromise = s3Client.upload(params).promise();
+    promise_array.push(putObjectPromise);
   });
-};
-
-app.post('/upload-image', upload.single('file'), uploadHelper);
+  Promise.all(promise_array)
+    .then((values) => {
+      console.log(values);
+      const urls = values.map((value) => value.Location);
+      console.log(urls);
+      res.send(urls);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });
+});
 app.get('/get-image', (req, res) => {
   // console.log(req.query);
   const query = req.query;

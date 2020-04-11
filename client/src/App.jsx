@@ -8,107 +8,64 @@ import $ from 'jquery';
 class App extends React.Component {
   state = {
     images: [],
-    total_file: 0,
-    file_uploaded: 0,
+    progress: 0,
   };
   preventDefaults = (e) => {
-    console.log('prevent defaults');
     e.preventDefault();
     e.stopPropagation();
   };
 
-  setUploadPercentage = (progress) => {
-    $('#progress-bar').css('width', progress + '%');
-    $('#progress-bar').text(progress + '%');
-  };
-  uploadFile = async (file) => {
-    console.log(file);
-
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    await this.setUploadPercentage(0);
-    reader.onloadend = () => {
-      let img = document.createElement('img');
-      img.src = reader.result;
-      // upload
-      const formData = new FormData();
-
-      formData.append('file', file);
-
-      axios
-        .post('/upload-image', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          onUploadProgress: (progressEvent) => {
-            console.log(
-              'progress: ' +
-                parseInt(
-                  Math.round((progressEvent.loaded * 100) / progressEvent.total)
-                )
-            );
-            this.setUploadPercentage(
-              parseInt(
-                Math.round((progressEvent.loaded * 100) / progressEvent.total)
-              )
-            );
-          },
-        })
-        .then((res) => {
-          console.log(res.data);
-          this.setState({ file_uploaded: this.state.file_uploaded + 1 });
-          this.previewFile(res.data.data);
-        })
-        .catch((err) => {
-          console.log('error: ' + err);
-        });
-    };
+  uploadFile = async (files) => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file, file.name);
+    });
+    axios
+      .post('/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          this.setState({
+            progress: parseInt(
+              Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            ),
+          });
+        },
+      })
+      .then((res) => {
+        this.previewFile(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   removePreviewImage = (e) => {
     const index = e.target.getAttribute('index');
-    console.log('Remove image on index ' + index);
     const images = this.state.images;
     images.splice(index, 1);
-    console.log(images);
     this.setState(images);
   };
 
   previewFile = (data) => {
-    console.log('preview file');
-    const { Location } = data;
     const images = this.state.images;
-    images.push({
-      src: Location,
-    });
-    this.setState({ images });
-  };
-
-  handleFiles = (files) => {
-    files = [...files];
-    files.forEach(this.uploadFile);
+    this.setState({ images: images.concat(data) });
   };
 
   handleDrop = (e) => {
-    console.log('dropped');
     const dt = e.dataTransfer;
     const files = dt.files;
-    this.setState({ total_file: files.length, file_uploaded: 0 });
-
-    this.handleFiles(files);
+    this.uploadFile(Array.from(files));
   };
 
   handleInputByClick = (e) => {
-    console.log('handleInputByClick');
-    console.log(e.target.files);
-    this.setState({ total_file: e.target.files.length, file_uploaded: 0 });
-    Array.from(e.target.files).forEach(this.uploadFile);
+    this.uploadFile(Array.from(e.target.files));
   };
 
   componentDidMount() {
     // drag and drop to upload
     const drop_region = document.getElementById('drop-region');
-    console.log(drop_region);
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
       drop_region.addEventListener(eventName, this.preventDefaults, false);
       document.body.addEventListener(eventName, this.preventDefaults, false);
@@ -145,10 +102,7 @@ class App extends React.Component {
   }
 
   render() {
-    const total_progress = Math.round(
-      (this.state.file_uploaded / this.state.total_file) * 100
-    );
-    console.log('total_progress ' + total_progress);
+    const { progress } = this.state;
     return (
       <div className='App'>
         <div className='container'>
@@ -166,7 +120,7 @@ class App extends React.Component {
             </div>
           </div>
           <p className='mx-auto'>
-            <strong>Single Image Progress</strong>
+            <strong>Uploading Progress</strong>
           </p>
           <div className='progress mx-auto'>
             <div
@@ -176,35 +130,16 @@ class App extends React.Component {
               aria-valuenow='40'
               aria-valuemin='0'
               aria-valuemax='100'
+              style={{ width: `${progress}%` }}
             >
-              0%
+              {progress}%
             </div>
           </div>
-          <p className='mx-auto'>
-            <strong>Overall Progress</strong>
-          </p>
-          <p>
-            Total: {this.state.total_file}, Uploaded: {this.state.file_uploaded}
-          </p>
-          <div className='progress mx-auto'>
-            <div
-              id='progress-bar'
-              className='progress-bar progress-bar-striped bg-success'
-              role='progressbar'
-              aria-valuenow='40'
-              aria-valuemin='0'
-              aria-valuemax='100'
-              style={{ width: `${total_progress}%` }}
-            >
-              {Math.round(this.state.file_uploaded / this.state.total_file) *
-                100}
-              %
-            </div>
-          </div>
+
           <div id='preview' className='mx-auto'>
             {this.state.images.map((img, index) => (
               <Fragment key={uid(img)}>
-                <img src={img.src} alt='' />
+                <img src={img} alt='' />
                 <button
                   className='btn btn-danger btn-block mx-auto'
                   index={index}
