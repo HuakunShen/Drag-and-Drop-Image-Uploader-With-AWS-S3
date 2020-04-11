@@ -2,18 +2,17 @@ const express = require('express');
 const app = express();
 const AWS = require('aws-sdk');
 const PORT = 5000;
+require('dotenv').config();
 const s3Client = new AWS.S3({
   accessKeyId: process.env.accessKeyId,
   secretAccessKey: process.env.secretAccessKey,
   region: process.env.region,
 });
-require('dotenv').config();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
 app.post('/upload-image', upload.array('files'), (req, res) => {
   const promise_array = [];
   req.files.forEach((file) => {

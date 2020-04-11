@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import './App.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { uid } from 'react-uid';
 import axios from 'axios';
 import $ from 'jquery';
 
@@ -17,6 +16,9 @@ class App extends React.Component {
 
   uploadFile = (files) => {
     const formData = new FormData();
+    this.setState({
+      progress: 0,
+    });
     files.forEach((file) => {
       formData.append('files', file, file.name);
     });
@@ -35,6 +37,11 @@ class App extends React.Component {
       })
       .then((res) => {
         this.previewFile(res.data);
+        setTimeout(() => {
+          this.setState({
+            progress: 0,
+          });
+        }, 3000);
       })
       .catch((err) => {
         console.log(err);
@@ -104,45 +111,44 @@ class App extends React.Component {
   render() {
     const { progress } = this.state;
     return (
-      <div className='App'>
-        <div className='container'>
+      <div className="App">
+        <div className="container">
           <h1>Drag and Drop Image Uploader with AWS S3</h1>
-          <div className='drop-region-container mx-auto'>
-            <div id='drop-region' className='drop-region text-center'>
-              <img id='download-btn' src='/Download.png' width='80' alt='' />
+          <div className="drop-region-container mx-auto">
+            <div id="drop-region" className="drop-region text-center">
+              <img id="download-btn" src="/Download.png" width="80" alt="" />
               <h2>Drag and Drop or Click to Upload</h2>
               <input
-                id='file-input'
-                type='file'
+                id="file-input"
+                type="file"
                 multiple
                 onChange={this.handleInputByClick}
               />
             </div>
           </div>
-          <p className='mx-auto'>
+          <p className="mx-auto">
             <strong>Uploading Progress</strong>
           </p>
-          <div className='progress mx-auto'>
+          <div className="progress mx-auto">
             <div
-              id='progress-bar'
-              className='progress-bar progress-bar-striped bg-info'
-              role='progressbar'
-              aria-valuenow='40'
-              aria-valuemin='0'
-              aria-valuemax='100'
+              id="progress-bar"
+              className="progress-bar progress-bar-striped bg-info"
+              role="progressbar"
+              aria-valuenow="40"
+              aria-valuemin="0"
+              aria-valuemax="100"
               style={{ width: `${progress}%` }}
             >
               {progress}%
             </div>
           </div>
 
-          <div id='preview' className='mx-auto'>
+          <div id="preview" className="mx-auto">
             {this.state.images.map((img, index) => (
-              <Fragment key={uid(img)}>
-                <img src={img} alt='' />
+              <Fragment key={index}>
+                <img src={img} alt="" />
                 <button
-                  className='btn btn-danger btn-block mx-auto'
-                  index={index}
+                  className="btn btn-danger btn-block mx-auto"
                   onClick={this.removePreviewImage}
                 >
                   Delete
