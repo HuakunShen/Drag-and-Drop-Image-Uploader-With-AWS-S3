@@ -12,6 +12,7 @@
       background-color: gray;
 
       .drop-region {
+        pointer-events: none;
         border: dashed 2px white;
         #download-btn {
           filter: invert(1);
