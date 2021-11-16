@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/HuakunShen/Drag-and-Drop-Image-Uploader-With-AWS-S3#readme",
   "dependencies": {
-    "aws-sdk": "^2.627.0",
+    "aws-sdk": "^2.814.0",
     "concurrently": "^5.1.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
